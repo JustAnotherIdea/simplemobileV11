@@ -192,7 +192,11 @@ Hooks.on('canvasReady', function () {
 	var clientX, clientY;
 
 	src.addEventListener('touchstart', function (e) {
-		console.log("TouchStart");
+		//console.log("TouchStart");
+		//toggling argon on mobile if it's already up
+		if(ui.ARGON._state > 0){
+			ui.ARGON.toggle();
+		}
 		clientX = e.touches[0].clientX;
 		clientY = e.touches[0].clientY;
 		//console.log("TouchStart at: "+"X:"+ clientX + " Y:" + clientY);
@@ -204,7 +208,7 @@ Hooks.on('canvasReady', function () {
 		deltaY = (e.changedTouches[0].clientY - clientY) * 0.1;
 		if (deltaX < 0.05 && deltaX > -0.05) return;
 		if (deltaY < 0.05 && deltaY > -0.05) return;
-		console.log("TouchMove at: " + "X:" + deltaX + " Y:" + deltaY);
+		//console.log("TouchMove at: " + "X:" + deltaX + " Y:" + deltaY);
 		canvas.animatePan({ duration: 0, x: canvas.scene._viewPosition.x - deltaX, y: canvas.scene._viewPosition.y - deltaY })
 		//console.log("X:"+ canvas.scene._viewPosition.x + " Y:" + canvas.scene._viewPosition.y);
 	}, false);
@@ -280,6 +284,18 @@ Hooks.on('canvasReady', function () {
 		}
 		xhttp.send(null);
 	}
+
+	//trying to get the screen to staw awake. This would only work on chrome
+	// let wakeLock = null;
+	// wakeLock = navigator.wakeLock.request('screen');
+});
+
+//changing controls to token control whenever it changes on mobile
+Hooks.on('getSceneControlButtons', function () {
+	//if on mobile allways switch to token control (the first scene-control)
+	if (window.innerWidth < 600) {
+		document.querySelector(".scene-control").click()
+    }
 });
 
 export class Controls extends Application {

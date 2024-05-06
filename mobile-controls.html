@@ -50,7 +50,9 @@
 		</div>
 		<script>
 			function opencharacter() {
-				game.toggleCharacterSheet();
+				//game.toggleCharacterSheet();
+				//changed to open argon hud instead
+				ui.ARGON.toggle();
 			}
 			function rotate(value) {
 				if (game.paused) { warn(); return; }
