@@ -1,3 +1,77 @@
+// import { AbilityTemplate } from '.../systems/dnd5e/module/canvas/ability-template.mjs';
+
+// 	//trying to redefine parts of AbilityTemplate
+// export class MobileAbilityTemplate extends AbilityTemplate {
+
+// 	#moveTime = 0;
+
+// 	#initialLayer;
+
+// 	#events;
+	
+// 	/**
+// 	 * Activate listeners for the template preview, including touch events.
+// 	 * @param {CanvasLayer} initialLayer  The initially active CanvasLayer to re-activate after the workflow is complete
+// 	 * @returns {Promise}                 A promise that resolves with the final measured template if created.
+// 	 */
+// 	activatePreviewListeners(initialLayer) {
+// 		return new Promise((resolve, reject) => {
+// 		this.#initialLayer = initialLayer;
+// 		this.#events = {
+// 			cancel: this._onCancelPlacement.bind(this),
+// 			confirm: this._onConfirmPlacement.bind(this),
+// 			move: this._onMovePlacement.bind(this),
+// 			resolve,
+// 			reject,
+// 			rotate: this._onRotatePlacement.bind(this)
+// 		};
+	
+// 		// Activate listeners for mouse events
+// 		canvas.stage.on("mousemove", this.#events.move);
+// 		canvas.stage.on("mousedown", this.#events.confirm);
+// 		canvas.app.view.oncontextmenu = this.#events.cancel;
+// 		canvas.app.view.onwheel = this.#events.rotate;
+	
+// 		// Activate listeners for touch events
+// 		canvas.stage.on("touchmove", this.#events.move);
+// 		canvas.stage.on("touchend", this.#events.confirm);
+// 		});
+// 	}
+	
+// 	/* -------------------------------------------- */
+	
+// 	/**
+// 	 * Move the template preview when the mouse or touch moves.
+// 	 * @param {Event} event  Triggering event.
+// 	 */
+// 	_onMovePlacement(event) {
+// 		event.stopPropagation();
+// 		const now = Date.now(); // Apply a 20ms throttle
+// 		if ( now - this.#moveTime <= 20 ) return;
+	
+// 		// Determine position based on event type
+// 		let center;
+// 		if (event.data) { // Mouse event
+// 		center = event.data.getLocalPosition(this.layer);
+// 		} else if (event.touches && event.touches.length === 1) { // Touch event
+// 		center = event.touches[0];
+// 		}
+	
+// 		const interval = canvas.grid.type === CONST.GRID_TYPES.GRIDLESS ? 0 : 2;
+// 		const snapped = canvas.grid.getSnappedPosition(center.x, center.y, interval);
+// 		this.document.updateSource({x: snapped.x, y: snapped.y});
+// 		this.refresh();
+// 		this.#moveTime = now;
+// 	}
+	
+// 	/* -------------------------------------------- */
+	
+// 	// Existing code...
+	
+// 	/* -------------------------------------------- */
+	
+// 	}
+
 Hooks.once('init', function () {
 
 	game.settings.register('simplemobile', 'lasttoken', {
@@ -197,21 +271,78 @@ Hooks.on('canvasReady', function () {
 		if(ui.ARGON._state > 0){
 			ui.ARGON.toggle();
 		}
-		clientX = e.touches[0].clientX;
-		clientY = e.touches[0].clientY;
+		if(ui.controls.activeControl === 'token'){
+			clientX = e.touches[0].clientX;
+			clientY = e.touches[0].clientY;
+			console.log("touchstart token");
+		} else if (ui.controls.activeControl === 'measure'){
+			//make sure measure select tool is active
+			document.querySelector(".control-tool[data-tool='select']").click();
+			// Prevent default touch event behavior
+			e.preventDefault();
+
+			// Emulate mouse hover
+			var hoverEvent = new MouseEvent('mouseover', {
+				clientX: e.touches[0].clientX,
+				clientY: e.touches[0].clientY
+			});
+
+			// Dispatch the mouse hover event
+			src.dispatchEvent(hoverEvent);
+			console.log("touchstart measure");
+		} else {
+			//switch back to token controls
+			document.querySelector(".scene-control").click();
+		}
 		//console.log("TouchStart at: "+"X:"+ clientX + " Y:" + clientY);
 	}, false);
 
 	src.addEventListener('touchmove', function (e) {
-		var deltaX, deltaY;
-		deltaX = (e.changedTouches[0].clientX - clientX) * 0.1;
-		deltaY = (e.changedTouches[0].clientY - clientY) * 0.1;
-		if (deltaX < 0.05 && deltaX > -0.05) return;
-		if (deltaY < 0.05 && deltaY > -0.05) return;
-		//console.log("TouchMove at: " + "X:" + deltaX + " Y:" + deltaY);
-		canvas.animatePan({ duration: 0, x: canvas.scene._viewPosition.x - deltaX, y: canvas.scene._viewPosition.y - deltaY })
-		//console.log("X:"+ canvas.scene._viewPosition.x + " Y:" + canvas.scene._viewPosition.y);
+		if(ui.controls.activeControl === 'token'){
+			var deltaX, deltaY;
+			deltaX = (e.changedTouches[0].clientX - clientX) * 0.1;
+			deltaY = (e.changedTouches[0].clientY - clientY) * 0.1;
+			if (deltaX < 0.05 && deltaX > -0.05) return;
+			if (deltaY < 0.05 && deltaY > -0.05) return;
+			console.log("TouchMove token");
+			canvas.animatePan({ duration: 0, x: canvas.scene._viewPosition.x - deltaX, y: canvas.scene._viewPosition.y - deltaY })
+			//console.log("X:"+ canvas.scene._viewPosition.x + " Y:" + canvas.scene._viewPosition.y);
+		} else if (ui.controls.activeControl === 'measure'){
+			// Prevent default touch event behavior
+			e.preventDefault();
+
+			// Emulate mousemove event
+			var mouseMoveEvent = new MouseEvent('mousemove', {
+				clientX: e.touches[0].clientX,
+				clientY: e.touches[0].clientY
+			});
+
+			// Dispatch the mousemove event
+			src.dispatchEvent(mouseMoveEvent);
+			console.log("TouchMove measure");
+		}
 	}, false);
+
+	src.addEventListener('touchend', function(e) {
+		if (ui.controls.activeControl === 'measure'){
+			// Prevent default touch event behavior
+			e.preventDefault();
+			
+			// Emulate mouse click
+			var mouseEvent = new MouseEvent('mousedown', {
+				clientX: clientX,
+				clientY: clientY
+			});
+		
+			// Dispatch the mouse click event
+			src.dispatchEvent(mouseEvent);
+
+			//switch back to token controls
+			document.querySelector(".scene-control").click();
+			console.log("touchEnd");
+		}
+	}, false);
+
 	/*src.addEventListener('touchend', function(e) {
 		var deltaX, deltaY;
 		deltaX = (e.changedTouches[0].clientX - clientX) * 0.2;
@@ -291,12 +422,12 @@ Hooks.on('canvasReady', function () {
 });
 
 //changing controls to token control whenever it changes on mobile
-Hooks.on('getSceneControlButtons', function () {
-	//if on mobile allways switch to token control (the first scene-control)
-	if (window.innerWidth < 600) {
-		document.querySelector(".scene-control").click()
-    }
-});
+// Hooks.on('getSceneControlButtons', function () {
+// 	//if on mobile allways switch to token control (the first scene-control)
+// 	if (window.innerWidth < 600) {
+// 		document.querySelector(".scene-control").click()
+//     }
+// });
 
 export class Controls extends Application {
 	openDialog() {
