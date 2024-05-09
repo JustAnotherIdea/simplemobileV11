@@ -907,4 +907,193 @@ scale: 150%; */
 
 }
 
-/*still need to fix character sheet styling, manual rolls not showing up (DF Manual Rolls), and token action hud toggle (Token Action HUD Core) */
+
+/*Module style changes. Slightly hacky. Will need to update*/
+@media only screen and (max-width: 600px){
+	
+    #client-settings > .window-content > .flexrow > .sidebar.flexcol {
+      flex: 0 0 122px !important;
+    }
+        
+    .extended-combat-hud {
+        z-index: 200;
+        bottom: 0 !important;
+        left: 0 !important;
+        transform: scale(1) !important;
+        flex-direction: column-reverse !important;
+    }
+        
+        .ech-show-ability-menu .ability-menu ul:first-child {
+        max-height: calc(100dvh - 3.1rem) !important;
+    }
+        
+        .extended-combat-hud .ability-menu {
+        bottom: 0 !important;
+        left: 0px;
+        position: static;
+        width: 100dvw !important;
+        z-index: 1000;
+    }
+        
+        .extended-combat-hud .portrait-hud {
+        order: 2;
+    }
+        .extended-combat-hud .weapon-sets {
+        order: 1;
+        position: static !important;
+    }
+        .extended-combat-hud .ability-menu:before {
+        top: auto !important;
+    }
+        .extended-combat-hud .portrait-hud {
+            display: grid;
+            grid-template-rows: 1fr !important;
+            min-height: 50dvw !important;
+            min-width: 50dvw !important;
+            width: 50dvw;
+            height: 50dvw;
+            justify-content: start !important;
+            pointer-events: none !important;
+    }
+        .extended-combat-hud .portrait-hud .portrait-hud-image {
+        width: 50dvw !important;
+        height: 50dvw !important;
+    }
+        .extended-combat-hud .portrait-hud .portrait-stat-block {
+        padding: initial;
+    }
+        .portrait-stat-block.player-details {
+        display: none !important;
+    }
+        .extended-combat-hud .portrait-hud .player-buttons {
+        flex-direction: row;
+        justify-content: normal;
+        position: static !important;
+                    text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000;
+            display: none;
+    }
+        .extended-combat-hud .action-hud .actions-container {
+        margin-bottom: 0 !important;
+        padding: 0 !important;
+    }
+        .extended-combat-hud .action-hud {
+        overflow-x: scroll !important;
+        overflow-y: hidden;
+        -ms-overflow-style: none !important;
+          scrollbar-width: none !important;
+        width: 100dvw !important;
+    }
+        .extended-combat-hud .action-hud::-webkit-scrollbar {
+      display: none !important;
+    }
+        .extended-combat-hud .portrait-hud .death-saves {
+        width: 50dvw !important;
+        height: 50dvw !important;
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr;
+        position: absolute;
+        align-items: center;
+        color: rgba(255, 255, 255, .693);
+        background-color: rgba(255, 0, 0, 0.6) !important;
+        z-index: 100 !important;
+    }
+        .extended-combat-hud .action-hud .features-container {
+            bottom: 250px !important;
+            flex-flow: row nowrap !important;
+            z-index: 1000 !important;
+            overflow-x: scroll !important;
+            padding: 0 !important;
+            width: 100dvw !important;
+            max-width: unset !important;
+            background: var(--ech-abilityMenu-background) !important;
+    }
+        .extended-combat-hud .action-hud .features-accordion {
+        overflow: unset !important;
+    }
+        .extended-combat-hud .action-hud .features-accordion-content {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+    }
+        .extended-combat-hud .weapon-sets {
+        justify-content: space-between !important;
+            width: 100dvw !important;
+    }
+        .extended-combat-hud .weapon-sets .weapon-set {
+        margin-right: 0 !important;
+    }
+        .ech-tooltip .ech-tooltip-body {
+        height: 100dvh;
+    }
+        .ech-tooltip {
+        min-width: 100dvw !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100dvw !important;
+        transform: scale(1) !important;
+        display: none !important;
+    }
+        
+    .extended-combat-hud .portrait-hud .portrait-actor-configuration i {
+        display: none;
+    }
+        .extended-combat-hud .portrait-hud .portrait-actor-configuration {
+        display: none;
+    }
+        .extended-combat-hud .movement-hud {
+            height: 50dvw !important;
+            left: 50dvw !important;
+            width: 50dvw !important;
+            top: -1px !important;
+    }
+        .extended-combat-hud .movement-hud .button-hud-button {
+        width: 50dvw !important;
+        gap: unset !important;
+    }
+        div#forien-ammo-swapper {
+        left: 0px !important;
+        top: 0px !important;
+        height: auto !important;
+        width: 100dvw !important;
+        flex-wrap: wrap !important;
+    }
+        #forien-ammo-swapper .weapon:not(:first-child) {
+        margin-left: unset !important;
+    }
+        #forien-ammo-swapper.draggable-enabled .drag-handle {
+        display: none !important;
+    }
+        .vtt:not(:has(.extended-combat-hud)) > #forien-ammo-swapper {
+            display: none !important
+    }
+        .window-app.form {
+        z-index: 5000 !important;
+    }
+        .extended-combat-hud .portrait-hud .death-saves {
+        pointer-events: all !important
+    }
+        .extended-combat-hud .movement-hud .movement-spaces {
+        flex-direction: row !important;
+        margin-bottom: 0 !important;
+    }
+        .item-image {
+            pointer-events: none;
+        }
+        .combatready-container {
+        display: none !important;
+    }
+        .ammunitions {
+        top: 52px !important;
+        bottom: auto !important;
+        z-index: 710 !important;
+    }
+        #forien-ammo-swapper {
+        z-index: 700 !important;
+    }
+        .app.window-app.dnd5e.dialog {
+        z-index: 5000 !important;
+    }
+        .ech-highjack-window {
+        left: 0 !important;
+    }
+}
