@@ -204,19 +204,17 @@ Hooks.on('canvasReady', function () {
 				console.log('touchstart token');
 			} else if (ui.controls.activeControl === 'measure') {
 				//make sure measure select tool is active
-				document.querySelector(".control-tool[data-tool='select']").click();
+				//document.querySelector(".control-tool[data-tool='select']").click();
 				// Prevent default touch event behavior
-				e.preventDefault();
-
+				//e.preventDefault();
 				// Emulate mouse hover
-				var hoverEvent = new MouseEvent('mouseover', {
-					clientX: e.touches[0].clientX,
-					clientY: e.touches[0].clientY,
-				});
-
+				//var hoverEvent = new MouseEvent('mouseover', {
+				//	clientX: e.touches[0].clientX,
+				//	clientY: e.touches[0].clientY,
+				//});
 				// Dispatch the mouse hover event
-				src.dispatchEvent(hoverEvent);
-				console.log('touchstart measure');
+				//src.dispatchEvent(hoverEvent);
+				//console.log('touchstart measure');
 			} else {
 				//switch back to token controls
 				document.querySelector('.scene-control').click();
@@ -244,17 +242,17 @@ Hooks.on('canvasReady', function () {
 				//console.log("X:"+ canvas.scene._viewPosition.x + " Y:" + canvas.scene._viewPosition.y);
 			} else if (ui.controls.activeControl === 'measure') {
 				// Prevent default touch event behavior
-				e.preventDefault();
-
-				// Emulate mousemove event
-				var mouseMoveEvent = new MouseEvent('mousemove', {
-					clientX: e.touches[0].clientX,
-					clientY: e.touches[0].clientY,
-				});
-
-				// Dispatch the mousemove event
-				src.dispatchEvent(mouseMoveEvent);
-				console.log('TouchMove measure');
+				//e.preventDefault();
+				//
+				//// Emulate mousemove event
+				//var mouseMoveEvent = new MouseEvent('mousemove', {
+				//	clientX: e.touches[0].clientX,
+				//	clientY: e.touches[0].clientY,
+				//});
+				//
+				//// Dispatch the mousemove event
+				//src.dispatchEvent(mouseMoveEvent);
+				//console.log('TouchMove measure');
 			}
 		},
 		false

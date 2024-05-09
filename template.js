@@ -42,15 +42,29 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 			};
 
 			// Activate listeners for mouse events
-			canvas.stage.on('mousemove', this.#events.move);
+			canvas.stage.on('pointermove', this.#events.move);
 			canvas.stage.on('mousedown', this.#events.confirm);
 			canvas.app.view.oncontextmenu = this.#events.cancel;
 			canvas.app.view.onwheel = this.#events.rotate;
 
 			// Activate listeners for touch events
-			canvas.stage.on('touchmove', this.#events.move);
+			canvas.stage.on('touchstart', this._onTouchStart);
 			canvas.stage.on('touchend', this.#events.confirm);
+
+			this._centerTemplateOnScreen();
 		});
+	}
+
+	_centerTemplateOnScreen() {
+		let { x, y } = canvas.stage.pivot;
+		x -= this.document.x / 2;
+		y -= this.document.y / 2;
+		this.document.updateSource({ x, y });
+		this.refresh();
+	}
+
+	_onTouchStart(event) {
+		event.stopPropagation();
 	}
 
 	/**
@@ -87,11 +101,11 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 	 */
 	async _finishPlacement(event) {
 		this.layer._onDragLeftCancel(event);
-		canvas.stage.off('mousemove', this.#events.move);
+		canvas.stage.off('pointermove', this.#events.move);
 		canvas.stage.off('mousedown', this.#events.confirm);
 
 		// Remove listeners for touch events
-		canvas.stage.off('touchmove', this.#events.move);
+		canvas.stage.off('touchstart', this._onTouchStart);
 		canvas.stage.off('touchend', this.#events.confirm);
 
 		canvas.app.view.oncontextmenu = null;
@@ -125,6 +139,25 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 		this.#events.reject();
 	}
 }
+
+class MobileTemplateLayer extends CONFIG.MeasuredTemplate.layerClass {
+	/** @override */
+	async _onDragLeftStart(event) {
+		const preview = canvas.templates.preview.children[0];
+		if (preview && event.pointerType === 'touch') {
+			event.interactionData.preview = preview;
+			return;
+		}
+		return super._onDragLeftStart(event);
+	}
+
+	/** @override */
+	_onDragLeftMove(event) {
+		if (event.pointerType === 'touch') return;
+		super._onDragLeftMove(event);
+	}
+}
+CONFIG.MeasuredTemplate.layerClass = CONFIG.Canvas.layers.templates.layerClass = MobileTemplateLayer;
 
 /**
  * Unfreezes the DND5e Canvas to replace the Ability Template class with the mobile version.
