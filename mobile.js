@@ -201,8 +201,10 @@ Hooks.on('canvasReady', function () {
 			if (ui.controls.activeControl === 'token') {
 				clientX = e.touches[0].clientX;
 				clientY = e.touches[0].clientY;
-				console.log('touchstart token');
+				// console.log('touchstart token');
 			} else if (ui.controls.activeControl === 'measure') {
+				clientX = window.innerWidth / 2;
+				clientY = window.innerHeight / 2;
 				//make sure measure select tool is active
 				//document.querySelector(".control-tool[data-tool='select']").click();
 				// Prevent default touch event behavior
@@ -233,7 +235,7 @@ Hooks.on('canvasReady', function () {
 				deltaY = (e.changedTouches[0].clientY - clientY) * 0.1;
 				if (deltaX < 0.05 && deltaX > -0.05) return;
 				if (deltaY < 0.05 && deltaY > -0.05) return;
-				console.log('TouchMove token');
+				// console.log('TouchMove token');
 				canvas.animatePan({
 					duration: 0,
 					x: canvas.scene._viewPosition.x - deltaX,
@@ -242,7 +244,28 @@ Hooks.on('canvasReady', function () {
 				//console.log("X:"+ canvas.scene._viewPosition.x + " Y:" + canvas.scene._viewPosition.y);
 			} else if (ui.controls.activeControl === 'measure') {
 				// Prevent default touch event behavior
-				//e.preventDefault();
+				e.preventDefault();
+
+				var sensitivity = 0.1; // Adjust the sensitivity to control the speed of panning
+				var maxDelta = 5; // Maximum distance to move the joystick handle
+
+				// Calculate the distance and direction of joystick movement
+				var deltaX = (e.changedTouches[0].clientX - clientX) * sensitivity;
+				var deltaY = (e.changedTouches[0].clientY - clientY) * sensitivity;
+
+				// Clamp the values to prevent excessive movement
+				deltaX = Math.min(Math.max(deltaX, -maxDelta), maxDelta);
+				deltaY = Math.min(Math.max(deltaY, -maxDelta), maxDelta);
+
+				// Adjust panning only if the joystick has moved significantly
+				if (Math.abs(deltaX) > 0.05 || Math.abs(deltaY) > 0.05) {
+					// Perform panning
+					canvas.animatePan({
+						duration: 0, // Instantaneous panning
+						x: canvas.scene._viewPosition.x + deltaX,
+						y: canvas.scene._viewPosition.y + deltaY,
+					});
+				}
 				//
 				//// Emulate mousemove event
 				//var mouseMoveEvent = new MouseEvent('mousemove', {
@@ -276,7 +299,7 @@ Hooks.on('canvasReady', function () {
 
 				//switch back to token controls
 				document.querySelector('.scene-control').click();
-				console.log('touchEnd');
+				// console.log('touchEnd');
 			}
 		},
 		false
