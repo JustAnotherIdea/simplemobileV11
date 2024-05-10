@@ -3,6 +3,32 @@
  */
 class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 	/**
+	 * Indicates whether confirmation listeners are active or not.
+	 * So they are not set twice.
+	 * @type {boolean}
+	 * @private
+	 */
+	static #confirmationListeners = false;
+
+	/**
+	 * Adds event listeners for mobile confirmation buttons.
+	 * @private
+	 */
+	static _mobileConfirmationListeners() {
+		if (this.#confirmationListeners) return;
+		const el = document.getElementById('mobile-confirmation');
+		el.querySelector('[data-action=confirm]')?.addEventListener('click', (event) => {
+			event.preventDefault();
+			canvas.templates.preview.children[0]._onConfirmPlacement(event);
+		});
+		el.querySelector('[data-action=cancel]')?.addEventListener('click', (event) => {
+			event.preventDefault();
+			canvas.templates.preview.children[0]._onCancelPlacement(event);
+		});
+		this.#confirmationListeners = true;
+	}
+
+	/**
 	 * Track the timestamp when the last mouse move event was captured.
 	 * @type {number}
 	 * @override
@@ -49,7 +75,8 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 
 			// Activate listeners for touch events
 			canvas.stage.on('touchstart', this._onTouchStart);
-			canvas.stage.on('touchend', this.#events.confirm);
+			this._toggleMobileConfirmation(true);
+			this.constructor._mobileConfirmationListeners();
 
 			this._centerTemplateOnScreen();
 		});
@@ -75,6 +102,15 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 	}
 
 	/**
+	 * Toggles the mobile confirmation element.
+	 * @param {boolean} [toggle=true] - Whether to toggle the element on or off. Default is true.
+	 */
+	_toggleMobileConfirmation(toggle = true) {
+		const el = document.getElementById('mobile-confirmation');
+		el.classList.toggle('active', toggle);
+	}
+
+	/**
 	 * Move the template preview when the mouse moves.
 	 * @param {Event} event  Triggering mouse event.
 	 * @override
@@ -85,14 +121,7 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 		if (now - this.#moveTime <= 20) return;
 
 		// Determine position based on event type
-		let center;
-		if (event.data) {
-			// Mouse event
-			center = event.data.getLocalPosition(this.layer);
-		} else if (event.touches && event.touches.length === 1) {
-			// Touch event
-			center = event.touches[0];
-		}
+		const center = event.data.getLocalPosition(this.layer);
 
 		const interval = canvas.grid.type === CONST.GRID_TYPES.GRIDLESS ? 0 : 2;
 		const snapped = canvas.grid.getSnappedPosition(center.x, center.y, interval);
@@ -108,12 +137,12 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 	 */
 	async _finishPlacement(event) {
 		this.layer._onDragLeftCancel(event);
-		canvas.stage.off('pointermove', this.#events.move);
+		canvas.stage.off('mousemove', this.#events.move);
 		canvas.stage.off('mousedown', this.#events.confirm);
 
 		// Remove listeners for touch events
 		canvas.stage.off('touchstart', this._onTouchStart);
-		canvas.stage.off('touchend', this.#events.confirm);
+		this._toggleMobileConfirmation(false);
 
 		canvas.app.view.oncontextmenu = null;
 		canvas.app.view.onwheel = null;
@@ -165,6 +194,12 @@ class MobileTemplateLayer extends CONFIG.MeasuredTemplate.layerClass {
 	_onDragLeftMove(event) {
 		if (event.pointerType === 'touch') return;
 		super._onDragLeftMove(event);
+	}
+
+	/** @override */
+	_onDragLeftCancel(event) {
+		if (event.pointerType === 'touch') return;
+		super._onDragLeftCancel(event);
 	}
 }
 

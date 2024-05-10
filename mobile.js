@@ -262,6 +262,8 @@ Hooks.on('canvasReady', function () {
 		'touchend',
 		function (e) {
 			if (ui.controls.activeControl === 'measure') {
+				if (canvas.templates.preview.children.length) return;
+
 				// Prevent default touch event behavior
 				e.preventDefault();
 
