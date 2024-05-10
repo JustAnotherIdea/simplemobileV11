@@ -55,6 +55,9 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 		});
 	}
 
+	/**
+	 * Center the template on the screen.
+	 */
 	_centerTemplateOnScreen() {
 		let { x, y } = canvas.stage.pivot;
 		x -= this.document.x / 2;
@@ -63,6 +66,10 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 		this.refresh();
 	}
 
+	/**
+	 * Disables the event propagation, to cancel the mousedown confirmation event.
+	 * @param {Event} event Triggering Touch event
+	 */
 	_onTouchStart(event) {
 		event.stopPropagation();
 	}
@@ -140,6 +147,9 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 	}
 }
 
+/**
+ * A Mobile-ready version of the Measured Template layer for the DND5e system.
+ */
 class MobileTemplateLayer extends CONFIG.MeasuredTemplate.layerClass {
 	/** @override */
 	async _onDragLeftStart(event) {
@@ -157,6 +167,10 @@ class MobileTemplateLayer extends CONFIG.MeasuredTemplate.layerClass {
 		super._onDragLeftMove(event);
 	}
 }
+
+/**
+ * Setups up the Mobile Template Layer for the DND5e system.
+ */
 CONFIG.MeasuredTemplate.layerClass = CONFIG.Canvas.layers.templates.layerClass = MobileTemplateLayer;
 
 /**
