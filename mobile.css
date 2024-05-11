@@ -116,6 +116,28 @@ img.profile {
     /* div#mobile-controls {
     display: none !important;
 } */
+    div#mobile-confirmation {
+        width: 30dvw;
+        height: 15dvh;
+        flex-direction: column;
+        display: none;
+    }
+
+    div#mobile-confirmation.active {
+        display: flex;
+    }
+
+    div#mobile-confirmation button {
+        flex: 1;
+    }
+
+    div#mobile-confirmation i.fa-check {
+        color: greenyellow;
+    }
+
+    div#mobile-confirmation i.fa-close {
+        color: crimson;
+    }
     div#mobile-container {
         /* flex: 1; */
         /* width: 39%; */

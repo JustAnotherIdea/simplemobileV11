@@ -3,6 +3,60 @@
  */
 class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 	/**
+	 * Indicates whether confirmation listeners are active or not.
+	 * So they are not set twice.
+	 * @type {boolean}
+	 * @private
+	 */
+	static #confirmationListeners = false;
+
+	/**
+	 * Adds event listeners for mobile confirmation buttons.
+	 * @private
+	 */
+	static _mobileConfirmationListeners() {
+		if (this.#confirmationListeners) return;
+
+		// Confirmation Div Events
+		const el = document.getElementById('mobile-confirmation');
+		el.querySelector('[data-action=confirm]')?.addEventListener('click', (event) => {
+			event.preventDefault();
+			canvas.templates.preview.children[0]._onConfirmPlacement(event);
+		});
+		el.querySelector('[data-action=cancel]')?.addEventListener('click', (event) => {
+			event.preventDefault();
+			canvas.templates.preview.children[0]._onCancelPlacement(event);
+		});
+
+		// Rotation Event
+		document.addEventListener('touchmove', this._onTouchRotate);
+
+		this.#confirmationListeners = true;
+	}
+
+	/**
+	 * Rotate the template preview when the touch moves.
+	 * @param {TouchEvent} event  Triggering touch event.
+	 */
+	static _onTouchRotate(event) {
+		if (event.touches.length !== 2 || canvas.templates.preview.children.length === 0) return;
+		const preview = canvas.templates.preview.children[0];
+		const allowedTypes = ['cone', 'ray'];
+		if (!allowedTypes.includes(preview.document.t)) return;
+
+		event.preventDefault();
+		const touch1 = event.touches[0];
+		const touch2 = event.touches[1];
+		const dx = touch2.clientX - touch1.clientX;
+		const dy = touch2.clientY - touch1.clientY;
+		const angle = Math.atan2(dy, dx);
+		const rotation = angle * (180 / Math.PI);
+
+		preview.document.updateSource({ direction: rotation });
+		preview.refresh();
+	}
+
+	/**
 	 * Track the timestamp when the last mouse move event was captured.
 	 * @type {number}
 	 * @override
@@ -49,12 +103,16 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 
 			// Activate listeners for touch events
 			canvas.stage.on('touchstart', this._onTouchStart);
-			canvas.stage.on('touchend', this.#events.confirm);
+			this._toggleMobileConfirmation(true);
+			this.constructor._mobileConfirmationListeners();
 
 			this._centerTemplateOnScreen();
 		});
 	}
 
+	/**
+	 * Center the template on the screen.
+	 */
 	_centerTemplateOnScreen() {
 		let { x, y } = canvas.stage.pivot;
 		x -= this.document.x / 2;
@@ -63,8 +121,21 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 		this.refresh();
 	}
 
+	/**
+	 * Disables the event propagation, to cancel the mousedown confirmation event.
+	 * @param {Event} event Triggering Touch event
+	 */
 	_onTouchStart(event) {
 		event.stopPropagation();
+	}
+
+	/**
+	 * Toggles the mobile confirmation element.
+	 * @param {boolean} [toggle=true] - Whether to toggle the element on or off. Default is true.
+	 */
+	_toggleMobileConfirmation(toggle = true) {
+		const el = document.getElementById('mobile-confirmation');
+		el.classList.toggle('active', toggle);
 	}
 
 	/**
@@ -78,14 +149,7 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 		if (now - this.#moveTime <= 20) return;
 
 		// Determine position based on event type
-		let center;
-		if (event.data) {
-			// Mouse event
-			center = event.data.getLocalPosition(this.layer);
-		} else if (event.touches && event.touches.length === 1) {
-			// Touch event
-			center = event.touches[0];
-		}
+		const center = event.data.getLocalPosition(this.layer);
 
 		const interval = canvas.grid.type === CONST.GRID_TYPES.GRIDLESS ? 0 : 2;
 		const snapped = canvas.grid.getSnappedPosition(center.x, center.y, interval);
@@ -101,12 +165,12 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 	 */
 	async _finishPlacement(event) {
 		this.layer._onDragLeftCancel(event);
-		canvas.stage.off('pointermove', this.#events.move);
+		canvas.stage.off('mousemove', this.#events.move);
 		canvas.stage.off('mousedown', this.#events.confirm);
 
 		// Remove listeners for touch events
 		canvas.stage.off('touchstart', this._onTouchStart);
-		canvas.stage.off('touchend', this.#events.confirm);
+		this._toggleMobileConfirmation(false);
 
 		canvas.app.view.oncontextmenu = null;
 		canvas.app.view.onwheel = null;
@@ -140,6 +204,9 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 	}
 }
 
+/**
+ * A Mobile-ready version of the Measured Template layer for the DND5e system.
+ */
 class MobileTemplateLayer extends CONFIG.MeasuredTemplate.layerClass {
 	/** @override */
 	async _onDragLeftStart(event) {
@@ -156,7 +223,17 @@ class MobileTemplateLayer extends CONFIG.MeasuredTemplate.layerClass {
 		if (event.pointerType === 'touch') return;
 		super._onDragLeftMove(event);
 	}
+
+	/** @override */
+	_onDragLeftCancel(event) {
+		if (event.pointerType === 'touch') return;
+		super._onDragLeftCancel(event);
+	}
 }
+
+/**
+ * Setups up the Mobile Template Layer for the DND5e system.
+ */
 CONFIG.MeasuredTemplate.layerClass = CONFIG.Canvas.layers.templates.layerClass = MobileTemplateLayer;
 
 /**
