@@ -117,8 +117,8 @@ img.profile {
 } */
 
 	div#mobile-confirmation {
-		width: 30vw;
-		height: 15vh;
+		width: 30dvw;
+		height: 15dvh;
 		flex-direction: column;
 		display: none;
 	}

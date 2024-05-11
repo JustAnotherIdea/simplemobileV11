@@ -16,6 +16,8 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 	 */
 	static _mobileConfirmationListeners() {
 		if (this.#confirmationListeners) return;
+
+		// Confirmation Div Events
 		const el = document.getElementById('mobile-confirmation');
 		el.querySelector('[data-action=confirm]')?.addEventListener('click', (event) => {
 			event.preventDefault();
@@ -25,7 +27,33 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 			event.preventDefault();
 			canvas.templates.preview.children[0]._onCancelPlacement(event);
 		});
+
+		// Rotation Event
+		document.addEventListener('touchmove', this._onTouchRotate);
+
 		this.#confirmationListeners = true;
+	}
+
+	/**
+	 * Rotate the template preview when the touch moves.
+	 * @param {TouchEvent} event  Triggering touch event.
+	 */
+	static _onTouchRotate(event) {
+		if (event.touches.length !== 2 || canvas.templates.preview.children.length === 0) return;
+		const preview = canvas.templates.preview.children[0];
+		const allowedTypes = ['cone', 'ray'];
+		if (!allowedTypes.includes(preview.document.t)) return;
+
+		event.preventDefault();
+		const touch1 = event.touches[0];
+		const touch2 = event.touches[1];
+		const dx = touch2.clientX - touch1.clientX;
+		const dy = touch2.clientY - touch1.clientY;
+		const angle = Math.atan2(dy, dx);
+		const rotation = angle * (180 / Math.PI);
+
+		preview.document.updateSource({ direction: rotation });
+		preview.refresh();
 	}
 
 	/**
