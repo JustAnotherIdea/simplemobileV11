@@ -188,6 +188,7 @@ class MobileAbilityTemplate extends dnd5e.canvas.AbilityTemplate {
 		const interval = canvas.grid.type === CONST.GRID_TYPES.GRIDLESS ? 0 : 2;
 		const destination = canvas.grid.getSnappedPosition(this.document.x, this.document.y, interval);
 		this.document.updateSource(destination);
+		//the "" to '' is the only change here, dont think we need this
 		this.#events.resolve(canvas.scene.createEmbeddedDocuments('MeasuredTemplate', [this.document.toObject()]));
 	}
 

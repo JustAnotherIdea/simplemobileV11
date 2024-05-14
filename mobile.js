@@ -244,7 +244,7 @@ Hooks.on('canvasReady', function () {
 				//console.log("X:"+ canvas.scene._viewPosition.x + " Y:" + canvas.scene._viewPosition.y);
 			} else if (ui.controls.activeControl === 'measure') {
 				// Prevent default touch event behavior
-				e.preventDefault();
+				//e.preventDefault();
 
 				var sensitivity = 0.1; // Adjust the sensitivity to control the speed of panning
 				var maxDelta = 5; // Maximum distance to move the joystick handle
@@ -434,5 +434,8 @@ export class Controls extends Application {
 
 // Initiates the MobileAbilityTemplate class when the setup hook is called
 Hooks.once('setup', () => {
-	import('./template.js');
+	//quick and dirty fix to templates not working on desktop
+	if (window.innerWidth < 600) {
+		import('./template.js');
+	}
 });
