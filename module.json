@@ -1,15 +1,15 @@
 {
-	"name": "simplemobile",
-	"title": "Simple-Mobile",
+	"name": "simplemobilev11",
+	"title": "Simple-Mobile-V11",
 	"description": "Adds mobile support",
 	"version": "0.2.6",
-	"author": "Handyfon#8390",
+	"author": "JustAnotherIdea",
 	"esmodules": ["mobile.js"],
 	"styles": ["mobile.css"],
 	 "socket": true,
-    "url": "https://github.com/Handyfon/simplemobile/tree/master",
-    "manifest": "https://raw.githubusercontent.com/Handyfon/simplemobile/master/module.json",
-    "download": "https://github.com/Handyfon/simplemobile/raw/master/simplemobile.zip",
+    "url": "https://github.com/JustAnotherIdea/simplemobileV11/blob/master",
+    "manifest": "https://raw.githubusercontent.com/JustAnotherIdea/simplemobileV11/master/module.json",
+    "download": "https://github.com/JustAnotherIdea/simplemobileV11/raw/master/simplemobilev11.zip",
 	"minimumCoreVersion": "0.8.9",
 	"compatibleCoreVersion": "11.315"
 }
