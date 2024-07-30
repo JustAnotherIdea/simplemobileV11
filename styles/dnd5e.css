@@ -1,4 +1,4 @@
-@media only screen and (max-width: 1024px) {
+@media only screen and (max-width: 1440px) {
 
     /*==========================*DND ONLY=====================================*/
     .dnd5e.sheet.actor ul.skills-list li.skill {
@@ -242,7 +242,7 @@
 }
 
 /*==========================*DND END=====================================*/
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 1440px) {
 
     /* UNDER 600 PIXEL*/
     .item-image {

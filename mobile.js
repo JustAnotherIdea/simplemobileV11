@@ -1,3 +1,10 @@
+window.mobileAndTabletCheck = function() {
+	const regex = /Mobi|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+	return regex.test(navigator.userAgent);
+};
+
+const isMobileOrTablet = window.mobileAndTabletCheck();
+
 Hooks.once('init', function () {
 	game.settings.register('simplemobile', 'lasttoken', {
 		name: 'Last Token',
@@ -62,7 +69,7 @@ Hooks.on('preRenderActorSheet5eCharacter', () => {
 	container.scrollLeft;
 });
 Hooks.on('renderPlayerList', () => {
-	if (screen.availWidth < 1024) {
+	if (isMobileOrTablet) {
 		game.user.setFlag('world', 'simpleMobile', true);
 		console.log('Mobile Mode');
 	} else {
@@ -82,7 +89,7 @@ Hooks.on('renderPlayerList', () => {
 	}
 });
 Hooks.on('canvasInit', () => {
-	if (game.settings.get('simplemobile', 'performanceop') & (window.screen.width < 1080)) {
+	if (game.settings.get('simplemobile', 'performanceop') & (isMobileOrTablet)) {
 		var node = document.getElementById('board');
 		if (node.parentNode) {
 			node.parentNode.removeChild(node);
@@ -90,7 +97,7 @@ Hooks.on('canvasInit', () => {
 		console.log('performance optimised');
 		let mi = document.querySelector('#mobile-container');
 	}
-	if (screen.availWidth < 1024) {
+	if (isMobileOrTablet) {
 		game.user.setFlag('world', 'simpleMobile', true);
 		//add fullscreen button to sidebar on load if mobile
 		let sidebarNav = document.getElementById('sidebar-tabs');
@@ -168,7 +175,7 @@ Hooks.on('canvasInit', () => {
 
 Hooks.on('canvasReady', function () {
 	//Collapse Sidebar on load
-	if (screen.availWidth < 1024) {
+	if (isMobileOrTablet) {
 		if (document.getElementById('sidebar').className == 'app') {
 			ui.sidebar.collapse();
 		}
@@ -179,213 +186,215 @@ Hooks.on('canvasReady', function () {
 	}
 });
 Hooks.on('canvasReady', function () {
-	function opencontrols() {
-		Controls = new Controls();
-		Controls.openDialog();
-	}
-	opencontrols();
-	let charname = game.user.charname;
-	console.log('[Simple Mobile] Initialized');
-
-	var src = document.getElementById('board');
-	var clientX, clientY;
-
-	src.addEventListener(
-		'touchstart',
-		function (e) {
-			//console.log("TouchStart");
-			//toggling argon on mobile if it's already up
-			if (ui.ARGON._state > 0) {
-				ui.ARGON.toggle();
-			}
-			if (ui.controls.activeControl === 'token') {
-				clientX = e.touches[0].clientX;
-				clientY = e.touches[0].clientY;
-				// console.log('touchstart token');
-			} else if (ui.controls.activeControl === 'measure') {
-				clientX = window.innerWidth / 2;
-				clientY = window.innerHeight / 2;
-				//make sure measure select tool is active
-				//document.querySelector(".control-tool[data-tool='select']").click();
-				// Prevent default touch event behavior
-				//e.preventDefault();
-				// Emulate mouse hover
-				//var hoverEvent = new MouseEvent('mouseover', {
-				//	clientX: e.touches[0].clientX,
-				//	clientY: e.touches[0].clientY,
-				//});
-				// Dispatch the mouse hover event
-				//src.dispatchEvent(hoverEvent);
-				//console.log('touchstart measure');
-			} else {
-				//switch back to token controls
-				document.querySelector('.scene-control').click();
-			}
-			//console.log("TouchStart at: "+"X:"+ clientX + " Y:" + clientY);
-		},
-		false
-	);
-
-	src.addEventListener(
-		'touchmove',
-		function (e) {
-			if (ui.controls.activeControl === 'token') {
-				var deltaX, deltaY;
-				deltaX = (e.changedTouches[0].clientX - clientX) * 0.1;
-				deltaY = (e.changedTouches[0].clientY - clientY) * 0.1;
-				if (deltaX < 0.05 && deltaX > -0.05) return;
-				if (deltaY < 0.05 && deltaY > -0.05) return;
-				// console.log('TouchMove token');
-				canvas.animatePan({
-					duration: 0,
-					x: canvas.scene._viewPosition.x - deltaX,
-					y: canvas.scene._viewPosition.y - deltaY,
-				});
-				//console.log("X:"+ canvas.scene._viewPosition.x + " Y:" + canvas.scene._viewPosition.y);
-			} else if (ui.controls.activeControl === 'measure') {
-				// Prevent default touch event behavior
-				//e.preventDefault();
-
-				var sensitivity = 0.1; // Adjust the sensitivity to control the speed of panning
-				var maxDelta = 5; // Maximum distance to move the joystick handle
-
-				// Calculate the distance and direction of joystick movement
-				var deltaX = (e.changedTouches[0].clientX - clientX) * sensitivity;
-				var deltaY = (e.changedTouches[0].clientY - clientY) * sensitivity;
-
-				// Clamp the values to prevent excessive movement
-				deltaX = Math.min(Math.max(deltaX, -maxDelta), maxDelta);
-				deltaY = Math.min(Math.max(deltaY, -maxDelta), maxDelta);
-
-				// Adjust panning only if the joystick has moved significantly
-				if (Math.abs(deltaX) > 0.05 || Math.abs(deltaY) > 0.05) {
-					// Perform panning
-					canvas.animatePan({
-						duration: 0, // Instantaneous panning
-						x: canvas.scene._viewPosition.x + deltaX,
-						y: canvas.scene._viewPosition.y + deltaY,
-					});
-				}
-				//
-				//// Emulate mousemove event
-				//var mouseMoveEvent = new MouseEvent('mousemove', {
-				//	clientX: e.touches[0].clientX,
-				//	clientY: e.touches[0].clientY,
-				//});
-				//
-				//// Dispatch the mousemove event
-				//src.dispatchEvent(mouseMoveEvent);
-				//console.log('TouchMove measure');
-			}
-		},
-		false
-	);
-
-	src.addEventListener(
-		'touchend',
-		function (e) {
-			if (ui.controls.activeControl === 'measure') {
-				if (canvas.templates.preview.children.length) return;
-
-				// Prevent default touch event behavior
-				e.preventDefault();
-
-				// Emulate mouse click
-				var mouseEvent = new MouseEvent('mousedown', {
-					clientX: clientX,
-					clientY: clientY,
-				});
-
-				// Dispatch the mouse click event
-				src.dispatchEvent(mouseEvent);
-
-				//switch back to token controls
-				document.querySelector('.scene-control').click();
-				// console.log('touchEnd');
-			}
-		},
-		false
-	);
-
-	/*src.addEventListener('touchend', function(e) {
-		var deltaX, deltaY;
-		deltaX = (e.changedTouches[0].clientX - clientX) * 0.2;
-		deltaY = (e.changedTouches[0].clientY - clientY) * 0.2;
-		console.log("TouchMove at: "+"X:"+ deltaX + " Y:" + deltaY);
-		canvas.animatePan({duration: 100, x: canvas.scene._viewPosition.x - deltaX, y: canvas.scene._viewPosition.y - deltaY})
-		//console.log("X:"+ canvas.scene._viewPosition.x + " Y:" + canvas.scene._viewPosition.y);
-	}, false);*/
-
-	// canvas.tokens.ownedTokens.length
-
-	// //SELECT CHARACTER
-	// if(canvas.tokens.ownedTokens.length > 0)
-	// {
-	// 	canvas.tokens.ownedTokens.map(token => token.control({releaseOthers: false}));
-	// 	let tokens = canvas.tokens.controlled;
-	// 	let lasttoken = parseInt(game.settings.get('simplemobile', 'lasttoken'));
-	// 	if(tokens.length === 1){
-	// 	lasttoken = 0;
-	// 	}
-	// 	else if( tokens.length -1 <= lasttoken){
-	// 	lasttoken = 0;
-	// 	}
-	// 	else{
-	// 	lasttoken += 1;
-	// 	}
-	// 	game.settings.set('simplemobile', 'lasttoken', lasttoken);
-	// 	//console.log(lasttoken);
-	// 	let x = tokens[lasttoken].x;
-	// 	let y = tokens[lasttoken].y;
-	// 	document.getElementById("sidebar");
-	// 	let twidth = tokens[lasttoken].w / 2;
-	// 	let theight = tokens[lasttoken].h / 2;
-	// 	let view = canvas.scene._viewPosition;
-	// 	canvas.animatePan({duration: 250, x: x+twidth, y: y+theight, scale: view.scale});
-	// }
-
-	//var sheet = document.createElement('style')
-	//sheet.innerHTML = "div {border: 20px solid red; background-color: blue;}";
-	//document.body.appendChild(sheet);
-	if (game.settings.get('simplemobile', 'loadlocalstyles')) {
-		console.log('[Simple Mobile] loading local files...');
-		if (!document.getElementById(cssId)) {
-			var head = document.getElementsByTagName('head')[0];
-			var link = document.createElement('link');
-			link.id = cssId;
-			link.rel = 'stylesheet';
-			link.type = 'text/css';
-			link.href = '/modules/simplemobile/styles/' + game.system.id + '.css';
-			link.media = 'all';
-			head.appendChild(link);
+	if (isMobileOrTablet) {
+		function opencontrols() {
+			Controls = new Controls();
+			Controls.openDialog();
 		}
-	} else {
-		var cssId = 'myCss'; // you could encode the css path itself to generate id..
-		console.log('[Simple Mobile] Loading Specific style for the ' + game.system.id + ' system...');
-		var xhttp = new XMLHttpRequest();
-		xhttp.open(
-			'GET',
-			'https://raw.githubusercontent.com/Handyfon/simplemobile/master/styles/' + game.system.id + '.css',
-			true
-		);
-		xhttp.onreadystatechange = function () {
-			if (xhttp.readyState === 4) {
-				if (xhttp.status === 200) {
-					var link = document.createElement('style');
-					link.innerHTML = xhttp.responseText;
-					document.getElementsByTagName('head')[0].appendChild(link);
+		opencontrols();
+		let charname = game.user.charname;
+		console.log('[Simple Mobile] Initialized');
+	
+		var src = document.getElementById('board');
+		var clientX, clientY;
+	
+		src.addEventListener(
+			'touchstart',
+			function (e) {
+				//console.log("TouchStart");
+				//toggling argon on mobile if it's already up
+				if (ui.ARGON._state > 0) {
+					ui.ARGON.toggle();
 				}
+				if (ui.controls.activeControl === 'token') {
+					clientX = e.touches[0].clientX;
+					clientY = e.touches[0].clientY;
+					// console.log('touchstart token');
+				} else if (ui.controls.activeControl === 'measure') {
+					clientX = window.innerWidth / 2;
+					clientY = window.innerHeight / 2;
+					//make sure measure select tool is active
+					//document.querySelector(".control-tool[data-tool='select']").click();
+					// Prevent default touch event behavior
+					//e.preventDefault();
+					// Emulate mouse hover
+					//var hoverEvent = new MouseEvent('mouseover', {
+					//	clientX: e.touches[0].clientX,
+					//	clientY: e.touches[0].clientY,
+					//});
+					// Dispatch the mouse hover event
+					//src.dispatchEvent(hoverEvent);
+					//console.log('touchstart measure');
+				} else {
+					//switch back to token controls
+					document.querySelector('.scene-control').click();
+				}
+				//console.log("TouchStart at: "+"X:"+ clientX + " Y:" + clientY);
+			},
+			false
+		);
+	
+		src.addEventListener(
+			'touchmove',
+			function (e) {
+				if (ui.controls.activeControl === 'token') {
+					var deltaX, deltaY;
+					deltaX = (e.changedTouches[0].clientX - clientX) * 0.1;
+					deltaY = (e.changedTouches[0].clientY - clientY) * 0.1;
+					if (deltaX < 0.05 && deltaX > -0.05) return;
+					if (deltaY < 0.05 && deltaY > -0.05) return;
+					// console.log('TouchMove token');
+					canvas.animatePan({
+						duration: 0,
+						x: canvas.scene._viewPosition.x - deltaX,
+						y: canvas.scene._viewPosition.y - deltaY,
+					});
+					//console.log("X:"+ canvas.scene._viewPosition.x + " Y:" + canvas.scene._viewPosition.y);
+				} else if (ui.controls.activeControl === 'measure') {
+					// Prevent default touch event behavior
+					//e.preventDefault();
+	
+					var sensitivity = 0.1; // Adjust the sensitivity to control the speed of panning
+					var maxDelta = 5; // Maximum distance to move the joystick handle
+	
+					// Calculate the distance and direction of joystick movement
+					var deltaX = (e.changedTouches[0].clientX - clientX) * sensitivity;
+					var deltaY = (e.changedTouches[0].clientY - clientY) * sensitivity;
+	
+					// Clamp the values to prevent excessive movement
+					deltaX = Math.min(Math.max(deltaX, -maxDelta), maxDelta);
+					deltaY = Math.min(Math.max(deltaY, -maxDelta), maxDelta);
+	
+					// Adjust panning only if the joystick has moved significantly
+					if (Math.abs(deltaX) > 0.05 || Math.abs(deltaY) > 0.05) {
+						// Perform panning
+						canvas.animatePan({
+							duration: 0, // Instantaneous panning
+							x: canvas.scene._viewPosition.x + deltaX,
+							y: canvas.scene._viewPosition.y + deltaY,
+						});
+					}
+					//
+					//// Emulate mousemove event
+					//var mouseMoveEvent = new MouseEvent('mousemove', {
+					//	clientX: e.touches[0].clientX,
+					//	clientY: e.touches[0].clientY,
+					//});
+					//
+					//// Dispatch the mousemove event
+					//src.dispatchEvent(mouseMoveEvent);
+					//console.log('TouchMove measure');
+				}
+			},
+			false
+		);
+	
+		src.addEventListener(
+			'touchend',
+			function (e) {
+				if (ui.controls.activeControl === 'measure') {
+					if (canvas.templates.preview.children.length) return;
+	
+					// Prevent default touch event behavior
+					e.preventDefault();
+	
+					// Emulate mouse click
+					var mouseEvent = new MouseEvent('mousedown', {
+						clientX: clientX,
+						clientY: clientY,
+					});
+	
+					// Dispatch the mouse click event
+					src.dispatchEvent(mouseEvent);
+	
+					//switch back to token controls
+					document.querySelector('.scene-control').click();
+					// console.log('touchEnd');
+				}
+			},
+			false
+		);
+	
+		/*src.addEventListener('touchend', function(e) {
+			var deltaX, deltaY;
+			deltaX = (e.changedTouches[0].clientX - clientX) * 0.2;
+			deltaY = (e.changedTouches[0].clientY - clientY) * 0.2;
+			console.log("TouchMove at: "+"X:"+ deltaX + " Y:" + deltaY);
+			canvas.animatePan({duration: 100, x: canvas.scene._viewPosition.x - deltaX, y: canvas.scene._viewPosition.y - deltaY})
+			//console.log("X:"+ canvas.scene._viewPosition.x + " Y:" + canvas.scene._viewPosition.y);
+		}, false);*/
+	
+		// canvas.tokens.ownedTokens.length
+	
+		// //SELECT CHARACTER
+		// if(canvas.tokens.ownedTokens.length > 0)
+		// {
+		// 	canvas.tokens.ownedTokens.map(token => token.control({releaseOthers: false}));
+		// 	let tokens = canvas.tokens.controlled;
+		// 	let lasttoken = parseInt(game.settings.get('simplemobile', 'lasttoken'));
+		// 	if(tokens.length === 1){
+		// 	lasttoken = 0;
+		// 	}
+		// 	else if( tokens.length -1 <= lasttoken){
+		// 	lasttoken = 0;
+		// 	}
+		// 	else{
+		// 	lasttoken += 1;
+		// 	}
+		// 	game.settings.set('simplemobile', 'lasttoken', lasttoken);
+		// 	//console.log(lasttoken);
+		// 	let x = tokens[lasttoken].x;
+		// 	let y = tokens[lasttoken].y;
+		// 	document.getElementById("sidebar");
+		// 	let twidth = tokens[lasttoken].w / 2;
+		// 	let theight = tokens[lasttoken].h / 2;
+		// 	let view = canvas.scene._viewPosition;
+		// 	canvas.animatePan({duration: 250, x: x+twidth, y: y+theight, scale: view.scale});
+		// }
+	
+		//var sheet = document.createElement('style')
+		//sheet.innerHTML = "div {border: 20px solid red; background-color: blue;}";
+		//document.body.appendChild(sheet);
+		if (game.settings.get('simplemobile', 'loadlocalstyles')) {
+			console.log('[Simple Mobile] loading local files...');
+			if (!document.getElementById(cssId)) {
+				var head = document.getElementsByTagName('head')[0];
+				var link = document.createElement('link');
+				link.id = cssId;
+				link.rel = 'stylesheet';
+				link.type = 'text/css';
+				link.href = '/modules/simplemobile/styles/' + game.system.id + '.css';
+				link.media = 'all';
+				head.appendChild(link);
 			}
-			if (xhttp.status === 404) {
-				console.log('[Simple Mobile] The ' + game.system.id + ' system is not yet supported...');
-			}
-		};
-		xhttp.send(null);
+		} else {
+			var cssId = 'myCss'; // you could encode the css path itself to generate id..
+			console.log('[Simple Mobile] Loading Specific style for the ' + game.system.id + ' system...');
+			var xhttp = new XMLHttpRequest();
+			xhttp.open(
+				'GET',
+				'https://raw.githubusercontent.com/Handyfon/simplemobile/master/styles/' + game.system.id + '.css',
+				true
+			);
+			xhttp.onreadystatechange = function () {
+				if (xhttp.readyState === 4) {
+					if (xhttp.status === 200) {
+						var link = document.createElement('style');
+						link.innerHTML = xhttp.responseText;
+						document.getElementsByTagName('head')[0].appendChild(link);
+					}
+				}
+				if (xhttp.status === 404) {
+					console.log('[Simple Mobile] The ' + game.system.id + ' system is not yet supported...');
+				}
+			};
+			xhttp.send(null);
+		}
+	
+		//trying to get the screen to staw awake. This would only work on chrome
+		// let wakeLock = null;
+		// wakeLock = navigator.wakeLock.request('screen');
 	}
-
-	//trying to get the screen to staw awake. This would only work on chrome
-	// let wakeLock = null;
-	// wakeLock = navigator.wakeLock.request('screen');
 });
 
 //changing controls to token control whenever it changes on mobile
@@ -435,7 +444,7 @@ export class Controls extends Application {
 // Initiates the MobileAbilityTemplate class when the setup hook is called
 Hooks.once('setup', () => {
 	//quick and dirty fix to templates not working on desktop
-	if (window.innerWidth < 600) {
+	if (isMobileOrTablet) {
 		import('./template.js');
 	}
 });
